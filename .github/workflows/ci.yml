@@ -1,0 +1,54 @@
+# ============================================================================
+# Taller de Repositorios de Software 
+# Ejemplo básico de integración continua con GitHub Actions.
+#
+# Colocar este archivo en:  .github/workflows/ci.yml
+#
+# Qué hace:
+#   - Se ejecuta automáticamente en cada push y en cada pull request
+#     dirigidos a la rama "main".
+#   - Instala dependencias, ejecuta un linter y la batería de tests.
+#   - Si algún paso falla, GitHub marca el commit/PR en rojo y (si se activa
+#     la protección de rama del Bloque 3) impide el merge hasta corregirlo.
+#
+# Adaptar el bloque "Instalar dependencias y ejecutar pruebas" al lenguaje
+# real del proyecto (aquí se muestra un ejemplo genérico en Python).
+# ============================================================================
+name: Integración Continua
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    name: Lint y tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código (checkout)
+        uses: actions/checkout@v4
+
+      - name: Configurar entorno (Python 3.12)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Linter (estilo de código)
+        run: flake8 . --max-line-length=100
+
+      - name: Ejecutar tests
+        run: pytest -v
+
+      - name: Resumen
+        if: success()
+        run: echo "✅ Lint y tests superados correctamente."
